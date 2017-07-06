@@ -2,7 +2,7 @@ package com.wrbug.dynamictemplatedemo.widget.common.js
 
 /**
  * JsCallback
- *
+ *js脚本调用java方法回调
  * @author wrbug
  * @since 2017/7/5
  */

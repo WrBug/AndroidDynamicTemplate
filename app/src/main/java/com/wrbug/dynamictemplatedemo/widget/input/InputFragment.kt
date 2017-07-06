@@ -41,6 +41,7 @@ class InputFragment : BaseWidgetFragment<InputProp, String>() {
         editText.hint = props.hint
     }
 
+    /** 通过JSExecutor.setVal()方法调用 */
     override fun setVal(aVal: Any?) {
         if (aVal != null) {
             editText.setText(aVal.toString())
@@ -55,8 +56,11 @@ class InputFragment : BaseWidgetFragment<InputProp, String>() {
             return map
         }
         var str = editText.text.toString()
+
+        //正则数组检测
         props.regexs?.forEach {
             if (!str.matches(Regex(it.regex))) {
+                //检查不通过抛出异常
                 throwDataError(it.msg)
             }
         }

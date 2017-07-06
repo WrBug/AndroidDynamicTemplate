@@ -8,6 +8,7 @@ import android.view.View
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
+import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 import java.util.*
 
@@ -15,28 +16,87 @@ import java.util.*
 /**
  * BaseWidgetFragment
  *
+ *
+ * P    控件属性
+ * V    控件value
+ *
  * @author wrbug
  * @since 2017/7/5
  */
-abstract class BaseWidgetFragment<P : BaseProp, V> : Fragment() {
+abstract class BaseWidgetFragment<P : BaseProp, out V> : Fragment() {
 
     protected lateinit var mWidgetInfoVo: WidgetInfo
     protected lateinit var props: P
     private lateinit var mWidgetAction: IWidgetAction
+    protected val gson: Gson by lazy {
+        GsonBuilder().create()
+    }
+    /**是否隐藏状态*/
     protected var isHide = false
+
+    /**控件属性Type，用于gson解析，下同*/
     private val propType: Type by lazy {
-        (javaClass.genericSuperclass as java.lang.reflect.ParameterizedType).actualTypeArguments[0]
+        (javaClass.genericSuperclass as ParameterizedType).actualTypeArguments[0]
     }
 
+
+    /**控件value值Type*/
     private val valueType: Type by lazy {
-        (javaClass.genericSuperclass as java.lang.reflect.ParameterizedType).actualTypeArguments[1]
+        (javaClass.genericSuperclass as ParameterizedType).actualTypeArguments[1]
     }
 
     companion object {
+        /** 控件json的key值 */
         val KEY_WIDGET_INFO = "KEY_WIDGET_INFO"
     }
 
+
+    /**********************************************************/
+    /**                                                      **/
+    /**              供外部调用的，或者需要重新的方法             **/
+    /**                                                      **/
+    /**********************************************************/
+
+
+    /** view初始化抽象方法 */
     abstract fun initView()
+
+    /**
+     * 执行脚本后重新刷新view,钩子方法，子类需要时重写
+     */
+    open fun refreshView() {
+
+    }
+
+    /**
+     * 获取新值
+     * 空方法，子类需要时重写
+     * @return
+     */
+    open fun getNewValue(): Any {
+        return Any()
+    }
+
+    /**
+     * 获取提交的数据
+     * 空方法，子类需要时重写
+     * @return
+     */
+    @Throws(WidgetDataErrorException::class)
+    open fun getData(): Map<String, *> {
+        return HashMap<String, Any>()
+    }
+
+    /**
+     * js设置控件value值
+     * 空方法，子类需要时重写
+     * @return
+     */
+    open fun setVal(aVal: Any?) {
+    }
+
+    /**********************************************************/
+
 
     override fun onAttach(context: Context?) {
         super.onAttach(context)
@@ -45,22 +105,27 @@ abstract class BaseWidgetFragment<P : BaseProp, V> : Fragment() {
 
     override fun onCreate(savedInstanceState: android.os.Bundle?) {
         super.onCreate(savedInstanceState)
-        var json = arguments.getString(com.wrbug.dynamictemplatedemo.widget.common.BaseWidgetFragment.Companion.KEY_WIDGET_INFO)
+        var json = arguments.getString(KEY_WIDGET_INFO)
         if (json.isNullOrEmpty()) {
+            //json为空隐藏该控件
             hideSelf()
         } else {
-            mWidgetInfoVo = com.google.gson.GsonBuilder().create().fromJson(json, WidgetInfo::class.java)
-            props = com.google.gson.GsonBuilder().create().fromJson(mWidgetInfoVo.config.prop, propType)
+            //获取控件参数
+            mWidgetInfoVo = gson.fromJson(json, WidgetInfo::class.java)
+            props = gson.fromJson(mWidgetInfoVo.config.prop, propType)
         }
     }
 
+    /** 申明为final，防止重写 */
     override final fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initView()
         refresh()
+        //加载完成发送初始化js脚本
         mWidgetAction.postInitJs(props.onChange)
     }
 
+    /** 重新设置prop后刷新界面 */
     private fun refresh() {
         if (props.isHide()) {
             hideSelf()
@@ -70,12 +135,6 @@ abstract class BaseWidgetFragment<P : BaseProp, V> : Fragment() {
         refreshView()
     }
 
-    /**
-     * 执行脚本后重新刷新view
-     */
-    open fun refreshView() {
-
-    }
 
     /**
      * js脚本检查，运行js脚本
@@ -105,33 +164,6 @@ abstract class BaseWidgetFragment<P : BaseProp, V> : Fragment() {
         return value
     }
 
-    /**
-     * 获取新值
-
-     * @return
-     */
-    open fun getNewValue(): Any {
-        return Any()
-    }
-
-    /**
-     * 获取提交的数据
-
-     * @return
-     */
-    @Throws(WidgetDataErrorException::class)
-    open fun getData(): Map<String, *> {
-        return HashMap<String, Any>()
-    }
-
-    /**
-     * 检查数据是否修改
-
-     * @return
-     */
-    fun isDataChanged(): Boolean {
-        return false
-    }
 
     @Throws(WidgetDataErrorException::class)
     protected fun throwDataError() {
@@ -143,12 +175,16 @@ abstract class BaseWidgetFragment<P : BaseProp, V> : Fragment() {
         throw WidgetDataErrorException(mWidgetInfoVo.config.id, getName(), msg)
     }
 
-    open fun setVal(aVal: Any?) {
-    }
+
+    /**********************************************************/
+    /**                                                      **/
+    /**                   通过js脚本获取/设置属性的方法          **/
+    /**                                                      **/
+    /**********************************************************/
+
 
     /**
-     * 设置属性，比较low的方案
-
+     * 设置属性
      * @param key   prop字段
      * *
      * @param value prop新值
@@ -166,9 +202,9 @@ abstract class BaseWidgetFragment<P : BaseProp, V> : Fragment() {
         refresh()
     }
 
+
     /**
      * 获取属性
-
      * @param key
      * *
      * @return
@@ -182,24 +218,31 @@ abstract class BaseWidgetFragment<P : BaseProp, V> : Fragment() {
                 return field.get(props)
             }
         } catch (e: NoSuchFieldException) {
-
         } catch (e: IllegalAccessException) {
-
         }
-
         return null
     }
 
-    fun getName(): String {
+    /**********************************************************/
+
+    protected fun getName(): String {
         return mWidgetInfoVo.config.name
     }
 
-    fun hideSelf() {
+    /** 隐藏 */
+    private fun hideSelf() {
+        if (isHide) {
+            return
+        }
         fragmentManager.beginTransaction().hide(this).commitAllowingStateLoss()
         isHide = true
     }
 
-    fun showSelf() {
+    /** 显示 */
+    private fun showSelf() {
+        if (!isHide) {
+            return
+        }
         fragmentManager.beginTransaction().show(this).commitAllowingStateLoss()
         isHide = false
     }

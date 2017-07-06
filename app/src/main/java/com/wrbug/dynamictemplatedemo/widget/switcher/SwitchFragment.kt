@@ -20,6 +20,15 @@ import kotlinx.android.synthetic.main.fragment_switch.*
  */
 class SwitchFragment : BaseWidgetFragment<SwitchProp, Int>(), CompoundButton.OnCheckedChangeListener {
 
+    companion object {
+        fun newInstance(param1: String): SwitchFragment {
+            val fragment = SwitchFragment()
+            val args = Bundle()
+            args.putString(KEY_WIDGET_INFO, param1)
+            fragment.arguments = args
+            return fragment
+        }
+    }
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
@@ -33,6 +42,7 @@ class SwitchFragment : BaseWidgetFragment<SwitchProp, Int>(), CompoundButton.OnC
         switcher.setOnCheckedChangeListener(this)
     }
 
+    /** 通过JSExecutor.setVal()方法调用 */
     override fun setVal(aVal: Any?) {
         if (aVal != null && aVal is Number) {
             switcher.isChecked = aVal.toInt() == 1
@@ -48,21 +58,12 @@ class SwitchFragment : BaseWidgetFragment<SwitchProp, Int>(), CompoundButton.OnC
     }
 
     override fun onCheckedChanged(buttonView: CompoundButton?, isChecked: Boolean) {
+        //控件状态变化检测
         onChangeCheck()
     }
 
     override fun getData(): Map<String, Int> {
         return hashMapOf(getName() to getNewValue() as Int)
-    }
-
-    companion object {
-        fun newInstance(param1: String): SwitchFragment {
-            val fragment = SwitchFragment()
-            val args = Bundle()
-            args.putString(KEY_WIDGET_INFO, param1)
-            fragment.arguments = args
-            return fragment
-        }
     }
 
 }

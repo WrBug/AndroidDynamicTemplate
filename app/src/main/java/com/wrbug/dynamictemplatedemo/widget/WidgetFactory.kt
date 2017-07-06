@@ -9,7 +9,7 @@ import com.wrbug.dynamictemplatedemo.widget.title.TitleFragment
 
 /**
  * WidgetFactory
- *
+ * 控件生成工厂类
  * @author wrbug
  * @since 2017/7/5
  */
@@ -17,8 +17,9 @@ object WidgetFactory {
     private val WIDGET_BUTTON = "button"
     private val WIDGET_INPUT = "input"
     private val WIDGET_TITLE = "title"
-    private val WIDGET_SWITCH="switch"
+    private val WIDGET_SWITCH = "switch"
 
+    /** 生成对应的BaseWidgetFragment */
     fun createWidget(widgetInfo: WidgetInfo): BaseWidgetFragment<*, *>? {
         val str = widgetInfo.toString()
         return when (widgetInfo.component) {
@@ -31,7 +32,7 @@ object WidgetFactory {
             WIDGET_TITLE -> {
                 TitleFragment.newInstance(str)
             }
-            WIDGET_SWITCH->{
+            WIDGET_SWITCH -> {
                 SwitchFragment.newInstance(str)
             }
             else -> {

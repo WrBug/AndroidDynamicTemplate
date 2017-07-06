@@ -6,10 +6,13 @@ function save(){
         }
         var username=JSExecutor.getVal('2_0')+'';
         var password=JSExecutor.getVal('2_1')+'';
+        //模拟请求
         if(username!='123456'||password!='Q1111111'){
             JSExecutor.showToast('用户名或密码有误');
             return
         }
+
+        //提交数据
         JSExecutor.submit(formData);
        });
 }

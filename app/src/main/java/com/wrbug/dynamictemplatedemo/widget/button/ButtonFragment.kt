@@ -42,6 +42,7 @@ class ButtonFragment : BaseWidgetFragment<ButtonProp, Any>(), View.OnClickListen
     }
 
     override fun onClick(v: View?) {
+        //点击执行onClick的js脚本
         runJs(props.onClick)
     }
 }
