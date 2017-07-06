@@ -1,0 +1,2 @@
+# AndroidDynamicTemplate
+android动态化模板方案
