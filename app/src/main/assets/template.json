@@ -1,0 +1,80 @@
+[
+  {
+    "component": "title",
+    "config": {
+      "id": "1",
+      "name": "as",
+      "prop": {
+        "title": "登录"
+      }
+    }
+  },
+  {
+    "component": "input",
+    "config": {
+      "id": "2_0",
+      "name": "username",
+      "prop": {
+        "hint": "账号"
+      }
+    }
+  },
+  {
+    "component": "input",
+    "config": {
+      "id": "2_1",
+      "name": "password",
+      "prop": {
+        "regexs": [
+          {
+            "regex": "\\w{6,18}$",
+            "msg": "密码长度在6~18"
+          },
+          {
+            "regex": "^[A-Z]\\w{5,17}$",
+            "msg": "密码大写字母开头"
+          }
+        ],
+        "hint": "密码"
+      }
+    }
+  },
+  {
+    "component": "switch",
+    "config": {
+      "id": "3",
+      "name": "switch1",
+      "prop": {
+        "title": "更多信息",
+        "onChange": "toggleMoreInfoAction()"
+      }
+    }
+  },
+  {
+    "component": "input",
+    "config": {
+      "id": "3_1",
+      "name": "idcard",
+      "prop": {
+        "regexs": [
+          {
+            "regex": "^(^[1-9]\\d{7}((0\\d)|(1[0-2]))(([0|1|2]\\d)|3[0-1])\\d{3}$)|(^[1-9]\\d{5}[1-9]\\d{3}((0\\d)|(1[0-2]))(([0|1|2]\\d)|3[0-1])((\\d{4})|\\d{3}[Xx])$)$",
+            "msg": "身份证号码有误"
+          }
+        ],
+        "hint": "身份证"
+      }
+    }
+  },
+  {
+    "component": "button",
+    "config": {
+      "id": "4",
+      "name": "as",
+      "prop": {
+        "title": "保存",
+        "onClick": "save()"
+      }
+    }
+  }
+]
